@@ -22,7 +22,7 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 
 func (app *application) writeJson(w http.ResponseWriter, status int, data any, headers http.Header) error {
 
-	js, err := json.Marshal(data)
+	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
 	}
