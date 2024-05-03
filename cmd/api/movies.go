@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/Nico2220/greenlight/internal/data"
 	"github.com/Nico2220/greenlight/internal/validator"
@@ -60,13 +60,26 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	movie := data.Movie{
-		ID:       id,
-		CreateAt: time.Now(),
-		Title:    "casablanca",
-		Runtime:  102,
-		Genres:   []string{"drama", "romance", "war"},
-		Version:  1,
+	// movie := data.Movie{
+	// 	ID:       id,
+	// 	CreateAt: time.Now(),
+	// 	Title:    "casablanca",
+	// 	Runtime:  102,
+	// 	Genres:   []string{"drama", "romance", "war"},
+	// 	Version:  1,
+	// }
+
+	movie, err := app.models.Movies.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+
+		}
+		return
+
 	}
 
 	err = app.writeJson(w, http.StatusOK, envelope{"movie": movie}, nil)
