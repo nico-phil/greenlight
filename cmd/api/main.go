@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Nico2220/greenlight/internal/data"
 	_ "github.com/lib/pq"
 )
 
@@ -19,16 +20,17 @@ type config struct {
 	port int
 	env  string
 	db   struct {
-		dsn string
+		dsn          string
 		maxOpenConns int
 		maxIdleConns int
-		maxIdleTime time.Duration
+		maxIdleTime  time.Duration
 	}
 }
 
 type application struct {
 	config config
 	logger *slog.Logger
+	models data.Models
 }
 
 func main() {
@@ -39,8 +41,8 @@ func main() {
 	flag.StringVar(&cfg.db.dsn, "db_dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
 
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
-    flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
-    flag.DurationVar(&cfg.db.maxIdleTime, "db-max-idle-time", 15*time.Minute, "PostgreSQL max connection idle time")
+	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
+	flag.DurationVar(&cfg.db.maxIdleTime, "db-max-idle-time", 15*time.Minute, "PostgreSQL max connection idle time")
 
 	flag.Parse()
 
@@ -59,6 +61,7 @@ func main() {
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 
 	mux := http.NewServeMux()
