@@ -130,11 +130,6 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		movie.Genres = input.Genres
 	}
 
-	// movie.Title = input.Title
-	// movie.Year = input.Year
-	// movie.Runtime = input.Runtime
-	// movie.Genres = input.Genres
-
 	v := validator.New()
 	if data.ValidateMovie(v, movie); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
@@ -143,11 +138,19 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 
 	err = app.models.Movies.Update(movie)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
 	err = app.writeJson(w, http.StatusOK, envelope{"movie": movie}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Request) {

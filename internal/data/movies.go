@@ -104,7 +104,7 @@ func (m MovieModel) Update(movie *Movie) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return errEditConflict
+			return ErrEditConflict
 		default:
 			return err
 		}
