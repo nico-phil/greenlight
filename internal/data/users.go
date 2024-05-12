@@ -142,4 +142,31 @@ func (u *UserModel) GetByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-func (u UserModel) Update(newUser *User) {}
+func (u *UserModel) Update(user *User) error {
+
+	query := `
+			UPDATE users 
+			SET name=$1, email=$2, password_hash=$3, activated=$4, version = version + 1
+			WHERE id=$5 AND version=$6
+			RETURNING version
+			`
+
+	args := []any{user.Name, user.Email, user.Password.hash, user.Activated, user.ID, user.Version}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.Version)
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrDuplicateEmail
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
