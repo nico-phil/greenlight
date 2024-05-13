@@ -20,9 +20,9 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	Password  password  `json:"password"`
+	Password  password  `json:"-"`
 	Activated bool      `json:"activated"`
-	Version   int       `json:"version"`
+	Version   int       `json:"-"`
 }
 
 type password struct {
@@ -67,7 +67,7 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 	v.Check(len(password) <= 72, "password", "must not be more that 72 bytes long")
 }
 
-func validateUser(v *validator.Validator, user *User) {
+func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "must be provided")
 	v.Check(len(user.Name) <= 500, "name", "must be not more than 500 bytes long")
 
@@ -98,7 +98,7 @@ func (u *UserModel) Insert(user *User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.Name, &user.Activated, user.Version)
+	err := u.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
 	if err != nil {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
