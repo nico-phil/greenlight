@@ -137,3 +137,19 @@ func (app *application) readInt(qs url.Values, key string, defaultValue int, v *
 	}
 	return i
 }
+
+// made this helper function recover the panic in one place
+func (app *application) background(fn func()) {
+	go func() {
+
+		defer func() {
+			if err := recover(); err != nil {
+				app.logger.Error(fmt.Sprintf("%v", err))
+			}
+		}()
+
+		fn()
+
+	}()
+
+}
