@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/Nico2220/greenlight/internal/data"
@@ -50,6 +51,12 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 		default:
 			app.serverErrorResponse(w, r, err)
 		}
+		return
+	}
+
+	err = app.mailer.Send(user.Email, "user_welcome.tmpl", user)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 
