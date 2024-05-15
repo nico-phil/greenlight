@@ -1,9 +1,12 @@
 package data
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/base32"
+	"github.com/Nico2220/greenlight/internal/validator"
 	"time"
 )
 
@@ -35,4 +38,41 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 	token.Hash = hash[:]
 
 	return token, nil
+}
+
+func ValidateTokenPlainText(v *validator.Validator, tokenPlainText string) {
+	v.Check(tokenPlainText != "", "token", "must be provided")
+	v.Check(len(tokenPlainText) == 26, "token", "should be26 bytes long")
+}
+
+type TokenModel struct {
+	DB *sql.DB
+}
+
+func (m TokenModel) Insert(token *Token) error {
+	query := `
+			INSERT INTO tokens(hash, user_id, expiry, scope)
+			VALUES($1,$2,$3, $4)`
+
+	args := []any{token.Hash, token.UserID, token.Expiry, token.Scope}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, err := m.DB.ExecContext(ctx, query, args...)
+	return err
+}
+
+func (m TokenModel) DeleteAllForUser(scope string, ID int64) error {
+	query := `
+		DELETE FROM  tokens 
+		WHERE scope=$1 AND user_id=$2`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	_, err := m.DB.ExecContext(ctx, query, scope, ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
