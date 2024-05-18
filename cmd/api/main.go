@@ -69,7 +69,7 @@ func main() {
 
 	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "rate limiter maximum request per second")
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "rate limiter maximum burst")
-	flag.BoolVar(&cfg.limiter.enabled, "limit-enabled", true, "enable rate-limiter")
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "enable rate-limiter")
 
 	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
 	flag.IntVar(&cfg.smtp.port, "smtp-port", 587, "SMTP port")
@@ -100,6 +100,14 @@ func main() {
 
 	expvar.Publish("goroutines", expvar.Func(func() any {
 		return runtime.NumGoroutine()
+	}))
+
+	expvar.Publish("database", expvar.Func(func() any {
+		return db.Stats()
+	}))
+
+	expvar.Publish("timestamp", expvar.Func(func() any {
+		return time.Now().Unix()
 	}))
 
 	app := &application{
