@@ -21,7 +21,7 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 
 	id, err := strconv.ParseInt(params.ByName("id"), 10, 64)
 	if err != nil || id < 1 {
-		return 0, errors.New("Invalid parameter")
+		return 0, errors.New("invalid parameter")
 	}
 
 	return id, nil
@@ -78,7 +78,7 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst any
 			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
 
 		case errors.Is(err, io.EOF):
-			return errors.New("Body must not be empty")
+			return errors.New("body must not be empty")
 
 		case strings.HasPrefix(err.Error(), "json: unknown field"):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field")
