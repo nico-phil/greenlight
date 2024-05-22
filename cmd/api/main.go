@@ -11,14 +11,17 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"fmt"
 
 	"github.com/Nico2220/greenlight/internal/data"
 	"github.com/Nico2220/greenlight/internal/mailer"
 	_ "github.com/lib/pq"
+	"github.com/Nico2220/greenlight/internal/vcs"
 )
 
-const version = "1.0.0"
-
+var (
+	version = vcs.Version()
+)
 type config struct {
 	port int
 	env  string
@@ -58,6 +61,7 @@ type application struct {
 
 func main() {
 	var cfg config
+	
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
@@ -77,12 +81,19 @@ func main() {
 	flag.StringVar(&cfg.smtp.password, "smtp-password", "699b26469a849e", "SMTP password")
 	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "nphilibert17@gmail.com", "SMTP password")
 
+	displayVersion := flag.Bool("version", false, "display version and exit")
+
 	flag.Func("cors-trusted-origins", "trusted CORS origins(space separedted)", func(val string) error {
 		cfg.cors.trustedOrigins = strings.Fields(val)
 		return nil
 	})
 
 	flag.Parse()
+
+	if *displayVersion  {
+		fmt.Printf("Version:\t%s\n", version)
+		os.Exit(0)
+	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
