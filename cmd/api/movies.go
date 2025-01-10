@@ -211,3 +211,27 @@ func (app *application) deleteMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 }
+
+
+// We need to design an application that will allow saving and downloading files and will be synchronized between different devices.
+
+
+// ### Functional Requirements
+
+// We need to design a service that will implement the following features:
+
+// * Upload and download files
+// * Operate on different devices (mobile, web, desktop)
+// * Ensure all files are accessible from each device
+// * Notify users of changes to files
+// * View file revisions
+// * Share access to the user's workspace (all their files) via a link
+
+// ### Non-functional Requirements
+
+// The solution must possess the following architectural characteristics:
+
+// * Support files with any extensions
+// * Store files reliably - data loss is unacceptable
+// * Synchronization delay must be no more than one minute
+// * The system must be highly available
