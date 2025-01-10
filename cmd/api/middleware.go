@@ -4,6 +4,7 @@ import (
 	"errors"
 	"expvar"
 	"fmt"
+
 	// "net"
 	"net/http"
 	"strconv"
@@ -13,8 +14,8 @@ import (
 
 	"github.com/Nico2220/greenlight/internal/data"
 	"github.com/Nico2220/greenlight/internal/validator"
-	"golang.org/x/time/rate"
 	"github.com/tomasen/realip"
+	"golang.org/x/time/rate"
 )
 
 func (app *application) recoverPanic(next http.Handler) http.Handler {
@@ -198,7 +199,7 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 
 		origin := r.Header.Get("Origin")
 
-		if origin != "" {
+		if origin != "" { 
 			for _, v := range app.config.cors.trustedOrigins {
 				if origin == v {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
